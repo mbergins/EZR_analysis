@@ -1,9 +1,4 @@
-function mask_thresh = find_cell_mask(I_file,varargin)
-%CREATE_CELL_MASK_IMAGE   Gather and write the cell mask from a
-%                         fluorescence image
-%
-%   create_cell_mask_image(I) finds the cell mask using the image in
-%   file 'I' and writes the binary cell mask to the same folder as 'I'
+function find_cell_mask(acceptor_file,varargin)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%Setup variables and parse command line
@@ -11,119 +6,112 @@ function mask_thresh = find_cell_mask(I_file,varargin)
 i_p = inputParser;
 i_p.StructExpand = true;
 
-i_p.addRequired('I_file',@(x)exist(x,'file') == 2);
-i_p.addParamValue('mask_threshold',0,@(x)isnumeric(x) && x > 0);
-i_p.addParamValue('median_filter',0,@(x)x==1 || x==0);
+i_p.addRequired('acceptor_file',@(x)exist(x,'file') == 2);
+
+i_p.addParamValue('min_cell_area',20000,@(x)isnumeric(x) && x > 0);
+i_p.addParamValue('unimodal_correction',2,@(x)isnumeric(x) && x > 0);
 
 i_p.addParamValue('debug',0,@(x)x==1 || x==0);
 
-i_p.parse(I_file,varargin{:});
+i_p.parse(acceptor_file,varargin{:});
 
 addpath(genpath('image_processing_misc'));
 
-mask_image = double(imread(I_file));
-mask_image_norm = normalize_image(mask_image);
+acceptor_image = double(imread(acceptor_file));
+acceptor_image_norm = normalize_image(acceptor_image);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%Main Program
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if (i_p.Results.median_filter)
-    mask_image = medfilt2(mask_image,[3,3]);
+acceptor_non_zero = nonzeros(acceptor_image);
+
+unimodal_thresh = [];
+
+for i = 500:10:1000
+    [hist_peaks,hist_centers] = hist(acceptor_non_zero(:),i);
+    unimodal_thresh = [unimodal_thresh,hist_centers(RosinThresh(hist_peaks))]; %#ok<AGROW>
 end
 
-mask_pixels = mask_image(:);
-mask_pixels = mask_pixels(mask_pixels >= quantile(mask_pixels,0.05));
+rosin_high_thresh = acceptor_image > mean(unimodal_thresh)*8;
+rosin_high_thresh = bwpropopen(rosin_high_thresh,'Area',i_p.Results.min_cell_area,...
+    'connectivity',4);
+rosin_high_thresh = fill_small_holes(rosin_high_thresh,50);
+rosin_regions = uint8(rosin_high_thresh);
 
-if (not(any(strcmp(i_p.UsingDefaults,'mask_threshold'))))
-    mask_thresh = i_p.Results.mask_threshold;
-else
-    %%Threshold identification
-    [heights, intensity] = hist(mask_pixels(:),length(unique(mask_pixels(:)))/4);
-    
-    smoothed_heights = smooth(heights,0.05,'loess');
-    [~,imax,~,imin]= extrema(smoothed_heights);
-    
-    if (length(imax) == 1)
-        mask_thresh = NaN;
-    else
-        %keep in mind that the zmax is sorted by value, so the highest peak is
-        %first and the corresponding index is also first in imax, the same pattern
-        %hold for zmin and imin
-        sorted_max_indexes = sort(imax);
-        highest_max_index = find(sorted_max_indexes == imax(1));
-        
-        %locate the index between the highest and next maximums
-        min_index = find(imin > sorted_max_indexes(highest_max_index) & imin < sorted_max_indexes(highest_max_index + 1));
-        assert(length(min_index) == 1, 'Error: expected to only find one minimum index');
-        mask_thresh = intensity(imin(min_index));
-    end
-end
+%find regions which appear to be part of a cell
+primary_cell_body = acceptor_image > mean(unimodal_thresh)*i_p.Results.unimodal_correction;
+primary_cell_body = bwpropopen(primary_cell_body,'Area',i_p.Results.min_cell_area,...
+    'connectivity',4);
+primary_cell_body = fill_small_holes(primary_cell_body,50);
+rosin_regions(primary_cell_body & not(rosin_regions)) = 2;
 
-% if (isnan(mask_thresh))
-%     mask_image_orig = double(imread(I_file));
-%     mask_min_max = csvread(fullfile(fileparts(I_file),filenames.raw_mask_min_max));
-%     mask_image_orig_norm = (mask_image_orig - min(mask_min_max))/range(mask_min_max);
-%     
-%     [pathstr,name, ~] = fileparts(I_file);
-%     out_file = fullfile(pathstr,[name,'_edge.png']);
-%     
-%     imwrite(mask_image_orig_norm,out_file);
-%     
-%     return
-% end
+%find dimmer structures that are still above background
+high_passed_image = apply_high_pass_filter(acceptor_image,15);
 
-threshed_mask = mask_image > mask_thresh;
+high_passed_pixels = nonzeros(high_passed_image);
 
-%%Mask Cleanup
-connected_areas = bwlabel(threshed_mask);
-region_sizes = regionprops(connected_areas, 'Area'); %#ok<MRPBW>
+high_threshed = high_passed_image > std(high_passed_pixels(:));
+high_threshed = bwpropopen(high_threshed,'Area',10);
+high_threshed_label = bwlabel(high_threshed,4);
 
-%filter out connected regions smaller than 2.5% of the total image area
-threshed_mask = ismember(connected_areas, find([region_sizes.Area] > 0.005*length(mask_image(:))));
+%overlap the confident cell body image with the labeled dim object image
+%and pick out only those connected objects which touch the confident cell
+%body image
+cell_body_overlap_labels = nonzeros(unique(high_threshed_label.*primary_cell_body));
+cell_region = primary_cell_body | ismember(high_threshed_label,cell_body_overlap_labels);
 
-threshed_mask = imfill(threshed_mask,'holes');
-1;
+rosin_regions(cell_region & not(primary_cell_body)) = 3;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Pixel Intensity Histogram
+% Visualizations
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+masked_image = acceptor_image .* cell_region;
+
+vis_label = uint16(bwperim(cell_region));
+vis_label(bwperim(primary_cell_body)) = 2;
+vis_label(acceptor_image == 0) = 3;
+
+cmap = [1,0,0;0,1,0;1,1,0];
+
+cell_vis_image = create_highlighted_image(acceptor_image_norm,vis_label,'color_map',cmap);
+
+cmap = [1,0,1;0,1,0;0,0,1];
+rosin_thresh_vis = create_highlighted_image(acceptor_image_norm,rosin_regions,'color_map',cmap,'mix_percent',0.25);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% File Output
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% %wrapping this in a try to keep matlab from crashing when plot production
-% %isn't available
-% try %#ok<TRYNC>
-%     hist(mask_pixels(:),length(unique(mask_pixels(:)))/4);
-%     xlabel('Pixel Intensity');
-%     ylabel('Pixel Count');
-%     hold on;
-%     ylimits = ylim;
-%     plot([mask_thresh,mask_thresh],ylimits,'g','LineWidth',3);
-%     
-%     if (exist('smoothed_heights','var'))
-%         plot(intensity,smoothed_heights,'r','LineWidth',3);
-%         plot(intensity(imax),zmax,'x');
-%     end
-%     
-%     hold off;
-%     print('-dpng',fullfile(fileparts(I_file),'cell_mask_hist.png'))
-% end
-% 
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % File Output
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
-% out_file = fullfile(fileparts(I_file),filenames.cell_mask);
-% 
-% imwrite(threshed_mask, out_file);
+[folder,file] = fileparts(acceptor_file);
+
+imwrite_with_folder_creation(cell_region,...
+    fullfile(folder,'..','cell_masks',[file '.png']));
+
+imwrite_with_folder_creation(rosin_thresh_vis,...
+    fullfile(folder,'..','rosin_thresh_vis',[file '.png']));
+
+imwrite_with_folder_creation(rosin_regions,...
+    fullfile(folder,'..','rosin_thresh',[file '.png']));
+
+imwrite_with_folder_creation(cell_vis_image,...
+    fullfile(folder,'..','cell_mask_vis',[file '.png']));
+
+output_folder = fullfile(folder,'..','masked_Acceptor');
+mkdir_no_err(output_folder);
+out_file = fullfile(output_folder,[file '.tif']);
+imwrite2tif(masked_image,[],out_file,'single');
+
 % 
 % if (i_p.Results.debug)
 %     addpath('../visualize_cell_features/');
 %     
-%     mask_image_orig = double(imread(I_file));
-%     mask_min_max = csvread(fullfile(fileparts(I_file),filenames.raw_mask_min_max));
-%     mask_image_orig_norm = (mask_image_orig - min(mask_min_max))/range(mask_min_max);
+%     acceptor_image_orig = double(imread(acceptor_file));
+%     mask_min_max = csvread(fullfile(fileparts(acceptor_file),filenames.raw_mask_min_max));
+%     acceptor_image_orig_norm = (acceptor_image_orig - min(mask_min_max))/range(mask_min_max);
 %     
-%     edge_highlight = create_highlighted_image(mask_image_orig_norm,bwperim(threshed_mask),'color_map',[1,0,0]);
-%     [pathstr,name, ~] = fileparts(I_file);
+%     edge_highlight = create_highlighted_image(acceptor_image_orig_norm,bwperim(threshed_mask),'color_map',[1,0,0]);
+%     [pathstr,name, ~] = fileparts(acceptor_file);
 %     out_file = fullfile(pathstr,[name,'_edge.png']);
 %     
 %     imwrite(edge_highlight,out_file);
