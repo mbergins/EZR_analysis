@@ -1,4 +1,4 @@
-function process_all_EZR(exp_folder,varargin)
+function process_single_field(exp_folder,varargin)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%Setup variables and parse command line
@@ -9,7 +9,7 @@ i_p = inputParser;
 
 i_p.addRequired('exp_folder',@(x)exist(x,'dir') == 7);
 
-i_p.addParamValue('debug',0,@(x)x==1 || x==0);
+i_p.addParameter('debug',0,@(x)x==1 || x==0);
 
 i_p.parse(exp_folder,varargin{:});
 
