@@ -8,10 +8,10 @@ i_p.StructExpand = true;
 
 i_p.addRequired('acceptor_file',@(x)exist(x,'file') == 2);
 
-i_p.addParamValue('min_cell_area',20000,@(x)isnumeric(x) && x > 0);
-i_p.addParamValue('unimodal_correction',2,@(x)isnumeric(x) && x > 0);
+i_p.addParameter('min_cell_area',20000,@(x)isnumeric(x) && x > 0);
+i_p.addParameter('unimodal_correction',2,@(x)isnumeric(x) && x > 0);
 
-i_p.addParamValue('debug',0,@(x)x==1 || x==0);
+i_p.addParameter('debug',0,@(x)x==1 || x==0);
 
 i_p.parse(acceptor_file,varargin{:});
 
