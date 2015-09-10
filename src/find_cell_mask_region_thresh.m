@@ -10,6 +10,7 @@ i_p.addRequired('acceptor_file',@(x)exist(x,'file') == 2);
 
 i_p.addParameter('min_cell_area',20000,@(x)isnumeric(x) && x > 0);
 i_p.addParameter('unimodal_correction',2,@(x)isnumeric(x) && x > 0);
+i_p.addParameter('min_region_intensity_average',1000,@(x)isnumeric(x) && x > 0);
 
 i_p.addParameter('debug',0,@(x)x==1 || x==0);
 
@@ -27,6 +28,12 @@ acceptor_image_norm = normalize_image(acceptor_image);
 cell_regions = acceptor_image > 0;
 cell_regions = bwpropopen(cell_regions,'Area',i_p.Results.min_cell_area,...
     'connectivity',8);
+cell_regions = bwlabel(cell_regions,8);
+
+region_props = regionprops(cell_regions,acceptor_image,'MeanIntensity'); %#ok<MRPBW>
+
+cell_regions = ismember(cell_regions,...
+    find([region_props.MeanIntensity] > i_p.Results.min_region_intensity_average));
 cell_regions = bwlabel(cell_regions,8);
 
 rosin_regions = zeros(size(cell_regions,1),size(cell_regions,2));
