@@ -9,7 +9,7 @@ for i=1:length(file_set.FRET_files)
     if (isfield(fieldnames(file_set),'Mask_files'))
         mask = imread(file_set.Mask_files{i});
     end
-        
+    
     if (exist('mask','var'))
         data_pixels = FRET > 0 & Donor > 0 & Acceptor > 500 & mask;
     else
