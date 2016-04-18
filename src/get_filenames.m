@@ -35,3 +35,6 @@ file_struct.Eff = file_search('.*',fullfile(i_p.Results.exp_folder,'Efficiency')
 file_struct.cell_label = file_search('.*',fullfile(i_p.Results.exp_folder,'cell_label'),...
     'return_complete_files',1);
 
+file_struct.edge_mask = file_search('.*',fullfile(i_p.Results.exp_folder,'edge_mask'),...
+    'return_complete_files',1);
+
