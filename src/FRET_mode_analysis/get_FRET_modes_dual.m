@@ -54,11 +54,12 @@ for i=1:length(FRET_file_set);
         filter = FRET_image_linear >= 0.001 & FRET_image_linear <= 1;
     end
     
-    filter = filter & acceptor_linear > 1000 & acceptor_linear < 15000;
-    filter = filter & donor_linear > 1000 & donor_linear < 15000;
+    filter = filter & acceptor_linear > 1000 & acceptor_linear < 10000;
+    filter = filter & donor_linear > 1000 & donor_linear < 10000;
 %     filter = filter & dpa_linear >= 0.75 & dpa_linear <= 2;
     
     passed_FRET_pix = FRET_image_linear(filter);
+    passed_Acc_pix = acceptor_linear(filter);
     
     if (length(passed_FRET_pix) < 10000)
         hist_modes = [hist_modes,NaN];  %#ok<AGROW>
