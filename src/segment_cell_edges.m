@@ -31,7 +31,6 @@ for i_num = 1:length(file_set.Acceptor)
     
     edge_mask = bwpropopen(edge_mask,'Area',100);
     edge_mask = fill_small_holes(edge_mask,10);
-%     edge_mask = bwpropopen(edge_mask,'major_minor_ratio',2);
     edge_mask = remove_edge_objects(edge_mask);
     
     edge_mask_label = bwlabel(edge_mask);
