@@ -1,4 +1,4 @@
-function rosin_means = process_images_with_mask(exp_folder,varargin)
+function process_images_with_mask(exp_folder,varargin)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%Setup variables and parse command line
@@ -18,29 +18,69 @@ addpath(genpath('image_processing_misc'));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 file_set = get_filenames(i_p.Results.exp_folder);
 
-for i = 1:length(file_set.Acceptor)
+for i = 1:length(file_set.Acceptor)    
     cell_label = imread(file_set.cell_label{i});
     cell_mask = cell_label > 0;
     
     FRET = imread(file_set.FRET{i});
     FRET_med = medfilt2(FRET,[5 5]);
-    
+        
     [folder,FRET_file] = fileparts(file_set.FRET{i});
     
     output_folder = fullfile(folder,'..','median_masked_FRET');
     mkdir_no_err(output_folder);
     out_file = fullfile(output_folder,[FRET_file '.tif']);
     imwrite2tif(FRET_med.*cell_mask,[],out_file,'single');
+
+    FRET_color_index = FRET_med.*cell_mask;
+    FRET_color_index = normalize_image(FRET_color_index,'limits',[0.4,0.6]);
+    FRET_color_index = round(FRET_color_index*256);
+    FRET_cmap = jet(255); FRET_cmap = [[0,0,0];FRET_cmap];
     
-    Eff = imread(file_set.Eff{i});
-    Eff_med = medfilt2(Eff,[5 5]);
+    FRET_color = ind2rgb(FRET_color_index,FRET_cmap);
     
-    [~,Eff_file] = fileparts(file_set.FRET{i});
-    
-    output_folder = fullfile(folder,'..','median_masked_Eff');
+    output_folder = fullfile(folder,'..','median_masked_FRET_colormap_0.4-0.6');
     mkdir_no_err(output_folder);
-    out_file = fullfile(output_folder,[Eff_file '.tif']);
-    imwrite2tif(Eff_med.*cell_mask,[],out_file,'single');
+    out_file = fullfile(output_folder,[FRET_file '.png']);
+    imwrite(FRET_color,out_file);
+
+    FRET_color_index = FRET_med.*cell_mask;
+    FRET_color_index = normalize_image(FRET_color_index,'limits',[0.2,0.6]);
+    FRET_color_index = round(FRET_color_index*256);
+    FRET_cmap = jet(255); FRET_cmap = [[0,0,0];FRET_cmap];
+    
+    FRET_color = ind2rgb(FRET_color_index,FRET_cmap);
+    
+    output_folder = fullfile(folder,'..','median_masked_FRET_colormap_0.2-0.6');
+    mkdir_no_err(output_folder);
+    out_file = fullfile(output_folder,[FRET_file '.png']);
+    imwrite(FRET_color,out_file);
+    
+    if (not(isempty(file_set.Eff)))
+        Eff = imread(file_set.Eff{i});
+        Eff_med = medfilt2(Eff,[5 5]);
+        
+        [~,Eff_file] = fileparts(file_set.FRET{i});
+        
+        output_folder = fullfile(folder,'..','median_masked_Eff');
+        mkdir_no_err(output_folder);
+        out_file = fullfile(output_folder,[Eff_file '.tif']);
+        imwrite2tif(Eff_med.*cell_mask,[],out_file,'single');
+        
+        Eff_color_index = Eff_med.*cell_mask;
+        Eff_color_index = normalize_image(Eff_color_index,'limits',[0.1,0.28]);
+        Eff_color_index = round(Eff_color_index*256);
+        Eff_cmap = jet(255); Eff_cmap = [[0,0,0];Eff_cmap];
+        
+        Eff_color = ind2rgb(Eff_color_index,Eff_cmap);
+        
+        output_folder = fullfile(folder,'..','median_masked_Eff_colormap_0.1-0.28');
+        mkdir_no_err(output_folder);
+        out_file = fullfile(output_folder,[Eff_file '.png']);
+        imwrite(Eff_color,out_file);
+
+        
+    end
 end
 
 % cell_mask_label = bwlabel(cell_mask);
