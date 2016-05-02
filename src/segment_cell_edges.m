@@ -29,7 +29,7 @@ for i_num = 1:length(file_set.Acceptor)
     Acc_high = apply_high_pass_filter(Acceptor,15);
     edge_mask = edge_mask & Acc_high > 0.5*std(Acc_high(:));
     
-    edge_mask = bwpropopen(edge_mask,'Area',100);
+    edge_mask = bwpropopen(edge_mask,'Area',100,'connectivity',4);
     edge_mask = fill_small_holes(edge_mask,10);
     edge_mask = remove_edge_objects(edge_mask);
     
