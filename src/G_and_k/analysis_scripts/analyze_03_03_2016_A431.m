@@ -34,3 +34,10 @@ draw_G_histograms(GGS_2_data_pixel,fullfile(output_dir,'G_calc_hists'),'GGS_2_pi
 
 GGS_9_data_pixel = read_in_images_mask(GGS_9);
 draw_G_histograms(GGS_9_data_pixel,fullfile(output_dir,'G_calc_hists'),'GGS_9_pixel');
+
+G_per_cell_est = (mean(GGS_2_data.FRET_per_Acc) - mean(GGS_9_data.FRET_per_Acc))/ ... 
+    (mean(GGS_9_data.Donor_per_Acc) - mean(GGS_2_data.Donor_per_Acc));
+
+k_per_cell_dist_GGS9 = (GGS_9_data.Donor + GGS_9_data.FRET/G_per_cell_est)./GGS_9_data.Acceptor;
+k_per_cell_dist_GGS2 = (GGS_2_data.Donor + GGS_2_data.FRET/G_per_cell_est)./GGS_2_data.Acceptor;
+
