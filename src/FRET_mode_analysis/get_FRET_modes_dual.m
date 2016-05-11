@@ -10,6 +10,7 @@ i_p.addRequired('exp_folder',@(x)exist(x,'dir') == 7);
 i_p.addParameter('search_folder','FRET',@ischar);
 i_p.addParameter('search_quantile',0,@isnumeric);
 
+i_p.addParameter('save_figs',0,@(x)x==1 || x==0);
 i_p.addParameter('debug',0,@(x)x==1 || x==0);
 
 i_p.parse(exp_folder,varargin{:});
@@ -67,4 +68,18 @@ for i=1:length(FRET_file_set);
         [counts,mids] = hist(passed_FRET_pix,256);
         hist_modes = [hist_modes,mids(find(max(counts)==counts,1))];  %#ok<AGROW>
     end
+    
+    if(i_p.Results.save_figs)
+        output_folder = fullfile(exp_folder,sprintf('%s-Hists',i_p.Results.search_folder));
+        mkdir(output_folder);
+        hist(passed_FRET_pix,256);
+        title(sprintf('Mode - %0.4f/5th - %0.2f/95th - %0.2f/Mean - %0.4f',hist_modes(end),...
+            quantile(passed_FRET_pix,0.05),quantile(passed_FRET_pix,0.95),...
+            mean(passed_FRET_pix)));
+        y_limits = ylim;
+        line([0.28,0.28],[y_limits(1),y_limits(2)]);
+        xlim([0,1]);
+        saveas(gcf,fullfile(output_folder,sprintf('%02d.png',i)));
+    end
+
 end
