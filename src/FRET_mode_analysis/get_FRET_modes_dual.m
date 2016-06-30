@@ -23,8 +23,11 @@ search_folder = i_p.Results.search_folder;
 FRET_file_set = dir(fullfile(exp_folder,search_folder));
 FRET_file_set = FRET_file_set(3:end);
 
-assert(not(isempty(FRET_file_set)),...
-       sprintf('Cant Find any Files to analyze: %s',exp_folder));
+if(isempty(FRET_file_set))
+   fprintf('Cant Find any Files to analyze: %s',exp_folder);
+   hist_modes = [];
+   return;
+end
 
 acceptor_file_set = dir(fullfile(exp_folder,'Acceptor'));
 acceptor_file_set = acceptor_file_set(3:end);
@@ -55,8 +58,8 @@ for i=1:length(FRET_file_set);
         filter = FRET_image_linear >= 0.001 & FRET_image_linear <= 1;
     end
     
-    filter = filter & acceptor_linear > 1000 & acceptor_linear < 10000;
-    filter = filter & donor_linear > 1000 & donor_linear < 10000;
+    filter = filter & acceptor_linear > 1000 & acceptor_linear < 20000;
+    filter = filter & donor_linear > 1000 & donor_linear < 20000;
 %     filter = filter & dpa_linear >= 0.75 & dpa_linear <= 2;
     
     passed_FRET_pix = FRET_image_linear(filter);

@@ -28,7 +28,7 @@ for i = 1:length(exp_folders)
     if (isdir(fullfile(base_dir,exp_folders(i).name)))
         fixed_name = matlab.lang.makeValidName(exp_folders(i).name);
         output_headers{end+1} = exp_folders(i).name; %#ok<AGROW>
-        index.(fixed_name) = get_FRET_modes_dual(fullfile(base_dir,exp_folders(i).name));
+        index.(fixed_name) = get_FRET_modes_dual(fullfile(base_dir,exp_folders(i).name),'save_figs',1);
     end
 end
 
@@ -49,7 +49,7 @@ for i = 1:length(exp_folders)
         fixed_name = matlab.lang.makeValidName(exp_folders(i).name);
         output_headers{end+1} = exp_folders(i).name; %#ok<AGROW>
         eff.(fixed_name) = get_FRET_modes_dual(fullfile(base_dir,exp_folders(i).name),...
-            'search_folder','Efficiency');
+            'search_folder','Efficiency','save_figs',1);
     end
 end
 
@@ -70,7 +70,7 @@ for i = 1:length(exp_folders)
         fixed_name = matlab.lang.makeValidName(exp_folders(i).name);
         output_headers{end+1} = exp_folders(i).name; %#ok<AGROW>
         dpa.(fixed_name) = get_FRET_modes_dual(fullfile(base_dir,exp_folders(i).name),...
-            'search_folder','DPA','search_quantile',1);
+            'search_folder','DPA','search_quantile',1,'save_figs',1);
     end
 end
 
