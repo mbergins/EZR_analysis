@@ -38,3 +38,6 @@ file_struct.cell_label = file_search('.*',fullfile(i_p.Results.exp_folder,'cell_
 file_struct.edge_mask = file_search('.*',fullfile(i_p.Results.exp_folder,'edge_mask'),...
     'return_complete_files',1);
 
+file_struct.non_edge_mask = file_search('.*',fullfile(i_p.Results.exp_folder,'non_edge_mask'),...
+    'return_complete_files',1);
+
