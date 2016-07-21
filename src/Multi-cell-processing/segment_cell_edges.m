@@ -11,7 +11,8 @@ i_p.addParameter('debug',0,@(x)x==1 || x==0);
 
 i_p.parse(exp_folder,varargin{:});
 
-addpath(genpath('image_processing_misc'));
+addpath(genpath('../image_processing_misc'));
+addpath(genpath('../shared'));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%Main Program
@@ -35,6 +36,9 @@ for i_num = 1:length(file_set.Acceptor)
     
     edge_mask_label = bwlabel(edge_mask);
     
+    non_edge = Acceptor > 1000 & ~edge_mask;
+    non_edge_hightlight = create_highlighted_image(Acceptor_norm,non_edge,'mix_percent',0.5);
+    
     mask_highlight = create_highlighted_image(Acceptor_norm,edge_mask);
     mask_label_highlight = create_highlighted_image(Acceptor_norm,edge_mask_label);
 
@@ -49,4 +53,10 @@ for i_num = 1:length(file_set.Acceptor)
     
     mkdir_no_err(fullfile(exp_folder,'edge_label_highlight'));
     imwrite(mask_label_highlight,fullfile(exp_folder,'edge_label_highlight',sprintf('%02d.png',i_num)));
+    
+    mkdir_no_err(fullfile(exp_folder,'non_edge_mask'));
+    imwrite(non_edge,fullfile(exp_folder,'non_edge_mask',sprintf('%02d.png',i_num)));
+
+    mkdir_no_err(fullfile(exp_folder,'non_edge_mask_highlight'));
+    imwrite(non_edge_hightlight,fullfile(exp_folder,'non_edge_mask_highlight',sprintf('%02d.png',i_num)));
 end
