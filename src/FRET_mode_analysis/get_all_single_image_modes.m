@@ -17,25 +17,26 @@ addpath(genpath('../image_processing_misc/'));
 %%Main Function
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%Index Modes
-index = struct();
-
-output_headers = {};
-
-exp_folders = dir(base_dir); exp_folders = exp_folders(3:end);
-
-for i = 1:length(exp_folders)
-    if (isdir(fullfile(base_dir,exp_folders(i).name)))
-        fixed_name = matlab.lang.makeValidName(exp_folders(i).name);
-        output_headers{end+1} = exp_folders(i).name; %#ok<AGROW>
-        index.(fixed_name) = get_FRET_modes_dual(fullfile(base_dir,exp_folders(i).name),'save_figs',1);
-    end
-end
-
-output_data = convert_struct_to_matrix(index);
-
-csvwrite_with_headers(fullfile(base_dir,'index_hist_modes.csv'),...
-    output_data,output_headers);
+% %Index Modes
+% index = struct();
+% 
+% output_headers = {};
+% 
+% exp_folders = dir(base_dir); exp_folders = exp_folders(3:end);
+% 
+% for i = 1:length(exp_folders)
+%     if (isdir(fullfile(base_dir,exp_folders(i).name)))
+%         fixed_name = matlab.lang.makeValidName(exp_folders(i).name);
+%         output_headers{end+1} = exp_folders(i).name; %#ok<AGROW>
+%         index.(fixed_name) = get_FRET_modes_dual(fullfile(base_dir,exp_folders(i).name),...
+%             'save_figs',1);
+%     end
+% end
+% 
+% output_data = convert_struct_to_matrix(index);
+% 
+% csvwrite_with_headers(fullfile(base_dir,'index_hist_modes.csv'),...
+%     output_data,output_headers);
 
 %Efficiency Modes
 eff = struct();
@@ -49,7 +50,7 @@ for i = 1:length(exp_folders)
         fixed_name = matlab.lang.makeValidName(exp_folders(i).name);
         output_headers{end+1} = exp_folders(i).name; %#ok<AGROW>
         eff.(fixed_name) = get_FRET_modes_dual(fullfile(base_dir,exp_folders(i).name),...
-            'search_folder','Efficiency','save_figs',1);
+            'search_folder','Efficiency','save_figs',1,'write_masked_images',1);
     end
 end
 
