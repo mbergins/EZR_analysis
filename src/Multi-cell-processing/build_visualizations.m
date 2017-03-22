@@ -8,6 +8,8 @@ i_p = inputParser;
 i_p.addRequired('exp_folder',@(x)exist(x,'dir') == 7);
 
 i_p.addParameter('debug',0,@(x)x==1 || x==0);
+i_p.addParameter('Eff_limits',[0.20,0.30],@(x)isnumeric(x) & ...
+    length(x) == 2 & x(1) < x(2));
 
 i_p.parse(exp_folder,varargin{:});
 
@@ -22,40 +24,38 @@ file_set = get_filenames(exp_folder);
 
 c_map = [0,0,0;jet(255)];
 mkdir_no_err(fullfile(exp_folder,'visualizations'));
-imwrite(output_color_map(c_map),fullfile(exp_folder,'visualizations','scale_bar.png'));
+imwrite(output_color_map(c_map),...
+    fullfile(exp_folder,'visualizations','scale_bar.png'));
+imwrite(output_color_map(c_map,'labels',i_p.Results.Eff_limits),...
+    fullfile(exp_folder,'visualizations','scale_bar_labels.png'));
 
 for i_num = 1:length(file_set.Acceptor)
     Acceptor = imread(file_set.Acceptor{i_num});
+    Acceptor_norm = normalize_image(Acceptor);
     FRET = imread(file_set.FRET{i_num});
     DPA = imread(file_set.DPA{i_num});
     Eff = imread(file_set.Eff{i_num});
     
     edge_mask = imread(file_set.edge_mask{i_num});
-    edge_mask_label = bwlabel(edge_mask,4);
+    edge_mask_label = imread(file_set.edge_mask_label{i_num});
     
     props = regionprops(edge_mask,Acceptor,'Area','MajorAxisLength',...
         'MinorAxisLength','MeanIntensity');
     
-    FRET_props = regionprops(edge_mask,FRET,'MeanIntensity');
-    DPA_props = regionprops(edge_mask,DPA,'MeanIntensity');
     Eff_props = regionprops(edge_mask,Eff,'MeanIntensity');
 
+    No_force_highlight = create_highlighted_image(Acceptor_norm,Eff > 0.27 & Acceptor > 1000);
+    imwrite(No_force_highlight,fullfile(exp_folder,'visualizations',...
+        sprintf('No_force_%02d.png',i_num)));
     
-    FRET_mean = make_mean_image(edge_mask_label,FRET_props,'MeanIntensity');
-    FRET_mean_color = colorize_image(FRET_mean,c_map,'normalization_limits',[0.2,0.6]);
-    imwrite(FRET_mean_color,fullfile(exp_folder,'visualizations',sprintf('FRET_mean_%02d.png',i_num)));
-    
-    DPA_mean = make_mean_image(edge_mask_label,DPA_props,'MeanIntensity');
-    DPA_mean_color = colorize_image(DPA_mean,c_map,'normalization_limits',[0.75,1.5]);
-    imwrite(DPA_mean_color,fullfile(exp_folder,'visualizations',sprintf('DPA_mean_%02d.png',i_num)));
-
     Eff_mean = make_mean_image(edge_mask_label,Eff_props,'MeanIntensity');
-    Eff_mean_color = colorize_image(Eff_mean,c_map,'normalization_limits',[0.15,0.30]);
-    imwrite(Eff_mean_color,fullfile(exp_folder,'visualizations',sprintf('Eff_mean_%02d.png',i_num)));
+    Eff_mean_color = colorize_image(Eff_mean,c_map, ...
+        'normalization_limits',i_p.Results.Eff_limits);
+    imwrite(Eff_mean_color,fullfile(exp_folder,'visualizations',...
+        sprintf('Eff_mean_%02d.png',i_num)));
 end
 
 end
-
 
 function mean_image = make_mean_image(label,props,mean_prop_name)
     this_mean_set = [props.(mean_prop_name)];
