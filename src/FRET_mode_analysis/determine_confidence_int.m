@@ -1,5 +1,6 @@
-function [means,upper_CI,lower_CI] = determine_confidence_int(data_mat)
+function results = determine_confidence_int(data_mat)
 
+results = struct('mean',mean(data_mat));
 means = mean(data_mat);
 all_ci = [];
 
@@ -10,5 +11,5 @@ end
 all_ci(1,:) = mean(data_mat) - all_ci(1,:);
 all_ci(2,:) = all_ci(2,:) - mean(data_mat);
 
-upper_CI = all_ci(1,:);
-lower_CI = all_ci(2,:);
+results.upper = all_ci(1,:);
+results.lower = all_ci(2,:);
