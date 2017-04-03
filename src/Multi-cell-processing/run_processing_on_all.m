@@ -29,6 +29,8 @@ for i = 1:length(sub_folders)
             segment_cell_edges(fullfile(folder,sub_folders(i).name));
             process_cell_edges(fullfile(folder,sub_folders(i).name));
             build_visualizations(fullfile(folder,sub_folders(i).name));
+        catch
+            disp('Error on: ', sub_folders(i).name);
         end
     end
 end
