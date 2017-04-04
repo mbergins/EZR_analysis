@@ -23,7 +23,7 @@ file_set = get_filenames(exp_folder);
 data_set = struct('Image_num',[],'Obj_num',[],'Area',[],...
     'MajorAxisLength',[],'MinorAxisLength',[],'Solidity',[],...
     'AcceptorMean',[],'AcceptorBackground',[],'FRETMean',[],'DPAMean',[],...
-    'EffMean',[],'EffBackground',[]);
+    'EffMean',[],'EffBackground',[],'Centroid_x',[],'Centroid_y',[]);
 
 ezr_regions = struct('Edge_eff_mode',[],'Non_edge_eff_mode',[],...
     'wide_non_edge_eff_mode',[]);
@@ -49,7 +49,9 @@ for i_num = 1:length(file_set.Acceptor)
     
     
     props = regionprops(edge_mask_label,Acceptor,'Area','MajorAxisLength',...
-        'MinorAxisLength','MeanIntensity','Solidity');
+        'MinorAxisLength','MeanIntensity','Solidity','Centroid');
+    
+    centroid_props = reshape([props.Centroid],[2],[]);
     
     FRET_props = regionprops(edge_mask_label,FRET,'MeanIntensity');
     DPA_props = regionprops(edge_mask_label,DPA,'MeanIntensity');
@@ -72,6 +74,8 @@ for i_num = 1:length(file_set.Acceptor)
     data_set.DPAMean = [data_set.DPAMean; [DPA_props.MeanIntensity]'];
     data_set.EffMean = [data_set.EffMean; [Eff_props.MeanIntensity]'];
     data_set.EffBackground = [data_set.EffBackground; eff_background'];
+    data_set.Centroid_x = [data_set.Centroid_x; centroid_props(1,:)'];
+    data_set.Centroid_y = [data_set.Centroid_y; centroid_props(2,:)'];
 end
 
 data_set_mat = convert_struct_to_matrix(data_set);
