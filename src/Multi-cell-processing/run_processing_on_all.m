@@ -30,7 +30,7 @@ for i = 1:length(sub_folders)
             process_cell_edges(fullfile(folder,sub_folders(i).name));
             build_visualizations(fullfile(folder,sub_folders(i).name));
         catch
-            disp('Error on: ', sub_folders(i).name);
+            disp(['Error on: ', fullfile(folder,sub_folders(i).name)]);
         end
     end
 end
