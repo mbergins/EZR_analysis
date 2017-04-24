@@ -22,14 +22,15 @@ file_set = get_filenames(exp_folder);
 
 data_set = struct('Image_num',[],'Obj_num',[],'Area',[],...
     'MajorAxisLength',[],'MinorAxisLength',[],'Solidity',[],...
-    'AcceptorMean',[],'AcceptorBackground',[],'FRETMean',[],'DPAMean',[],...
-    'EffMean',[],'EffBackground',[],'Centroid_x',[],'Centroid_y',[]);
+    'AcceptorMean',[],'AcceptorBackground',[],'DonorMean',[],'FRETMean',[],...
+    'DPAMean',[],'EffMean',[],'EffBackground',[],'Centroid_x',[],'Centroid_y',[]);
 
 ezr_regions = struct('Edge_eff_mode',[],'Non_edge_eff_mode',[],...
     'wide_non_edge_eff_mode',[]);
 
 for i_num = 1:length(file_set.Acceptor)
     Acceptor = imread(file_set.Acceptor{i_num});
+    Donor = imread(file_set.Donor{i_num});
     FRET = imread(file_set.FRET{i_num});
     DPA = imread(file_set.DPA{i_num});
     Eff = imread(file_set.Eff{i_num});
@@ -47,12 +48,12 @@ for i_num = 1:length(file_set.Acceptor)
     ezr_regions.wide_non_edge_eff_mode = [ezr_regions.wide_non_edge_eff_mode,...
         find_hist_mode(Eff(wide_non_edge_mask),'limits',[0.01,0.99])];
     
-    
     props = regionprops(edge_mask_label,Acceptor,'Area','MajorAxisLength',...
         'MinorAxisLength','MeanIntensity','Solidity','Centroid');
     
     centroid_props = reshape([props.Centroid],[2],[]);
     
+    Donor_props = regionprops(edge_mask_label,Donor,'MeanIntensity');
     FRET_props = regionprops(edge_mask_label,FRET,'MeanIntensity');
     DPA_props = regionprops(edge_mask_label,DPA,'MeanIntensity');
     Eff_props = regionprops(edge_mask_label,Eff,'MeanIntensity');
@@ -69,6 +70,7 @@ for i_num = 1:length(file_set.Acceptor)
     data_set.Solidity = [data_set.Solidity; [props.Solidity]'];
     data_set.AcceptorMean = [data_set.AcceptorMean; [props.MeanIntensity]'];
     data_set.AcceptorBackground = [data_set.AcceptorBackground; acc_background'];
+    data_set.DonorMean = [data_set.DonorMean; [Donor_props.MeanIntensity]'];
     
     data_set.FRETMean = [data_set.FRETMean; [FRET_props.MeanIntensity]'];
     data_set.DPAMean = [data_set.DPAMean; [DPA_props.MeanIntensity]'];
