@@ -8,7 +8,7 @@ i_p = inputParser;
 i_p.addRequired('exp_folder',@(x)exist(x,'dir') == 7);
 
 i_p.addParameter('debug',0,@(x)x==1 || x==0);
-i_p.addParameter('Eff_limits',[0.20,0.35],@(x)isnumeric(x) & ...
+i_p.addParameter('Eff_limits',[0.20,0.3],@(x)isnumeric(x) & ...
     length(x) == 2 & x(1) < x(2));
 
 i_p.parse(exp_folder,varargin{:});
