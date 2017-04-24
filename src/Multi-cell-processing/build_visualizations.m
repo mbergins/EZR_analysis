@@ -50,10 +50,6 @@ for i_num = 1:length(file_set.Acceptor)
     
     Eff_props = regionprops(edge_mask_label,Eff,'MeanIntensity');
     
-    No_force_highlight = create_highlighted_image(Acceptor_norm,Eff > 0.27 & Acceptor > 1000);
-    imwrite(No_force_highlight,...
-        fullfile(vis_folder,sprintf('No_force_%02d.png',i_num)));
-    
     Eff_mean = make_mean_image(edge_mask_label,Eff_props,'MeanIntensity');
     Eff_mean_color = colorize_image(Eff_mean,c_map,...
         'normalization_limits',i_p.Results.Eff_limits);
