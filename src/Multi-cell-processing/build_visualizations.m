@@ -35,12 +35,13 @@ imwrite(output_color_map(c_map),...
     fullfile(vis_folder,'scale_bar.png'));
 
 
-for i_num = 1:length(file_set.Acceptor)
+parfor i_num = 1:length(file_set.Acceptor)
     Acceptor = imread(file_set.Acceptor{i_num});
     Acceptor_norm = normalize_image(Acceptor);
     FRET = imread(file_set.FRET{i_num});
     DPA = imread(file_set.DPA{i_num});
     Eff = imread(file_set.Eff{i_num});
+    Eff = Eff/1.143
     
     edge_mask = imread(file_set.edge_mask{i_num});
     edge_mask_label = imread(file_set.edge_mask_label{i_num});

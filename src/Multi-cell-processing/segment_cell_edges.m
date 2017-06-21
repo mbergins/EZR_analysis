@@ -20,7 +20,7 @@ addpath(genpath('../shared'));
 
 file_set = get_filenames(exp_folder);
 
-for i_num = 1:length(file_set.Acceptor)
+parfor i_num = 1:length(file_set.Acceptor)
     Acceptor = imread(file_set.Acceptor{i_num});
     Acceptor_norm = normalize_image(imread(file_set.Acceptor{i_num}),...,
         'quantile',[0.05,0.99],'only_nonzero',1);
