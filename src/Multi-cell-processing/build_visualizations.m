@@ -10,6 +10,8 @@ i_p.addRequired('exp_folder',@(x)exist(x,'dir') == 7);
 i_p.addParameter('debug',0,@(x)x==1 || x==0);
 i_p.addParameter('Eff_limits',[0.20,0.3],@(x)isnumeric(x) & ...
     length(x) == 2 & x(1) < x(2));
+i_p.addParameter('Eff_correction',1,@(x)isnumeric(x) & ...
+    length(x) == 1);
 
 i_p.parse(exp_folder,varargin{:});
 
@@ -41,7 +43,7 @@ parfor i_num = 1:length(file_set.Acceptor)
     FRET = imread(file_set.FRET{i_num});
     DPA = imread(file_set.DPA{i_num});
     Eff = imread(file_set.Eff{i_num});
-    Eff = Eff/1.143
+    Eff = Eff * i_p.Results.Eff_correction
     
     edge_mask = imread(file_set.edge_mask{i_num});
     edge_mask_label = imread(file_set.edge_mask_label{i_num});
