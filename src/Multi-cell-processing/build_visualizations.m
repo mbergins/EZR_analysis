@@ -12,6 +12,8 @@ i_p.addParameter('Eff_limits',[0.20,0.3],@(x)isnumeric(x) & ...
     length(x) == 2 & x(1) < x(2));
 i_p.addParameter('Eff_correction',1,@(x)isnumeric(x) & ...
     length(x) == 1);
+i_p.addParameter('Acc_norm',[0,1],@(x)isnumeric(x) & length(x) == 2 & ...
+    x(1) < x(2));
 
 i_p.parse(exp_folder,varargin{:});
 
@@ -30,26 +32,28 @@ vis_folder = fullfile(exp_folder,'visualizations');
 
 mkdir_no_err(vis_folder);
 
+mkdir_no_err(fullfile(exp_folder,'Acceptor_norm'))
+
 imwrite(output_color_map(c_map,'labels',i_p.Results.Eff_limits),...
     fullfile(vis_folder,'scale_bar_labels.png'));
 
 imwrite(output_color_map(c_map),...
     fullfile(vis_folder,'scale_bar.png'));
 
-
 parfor i_num = 1:length(file_set.Acceptor)
-    Acceptor = imread(file_set.Acceptor{i_num});
-    Acceptor_norm = normalize_image(Acceptor);
-    FRET = imread(file_set.FRET{i_num});
-    DPA = imread(file_set.DPA{i_num});
+    Acceptor = imread(file_set.Acceptor{i_num}); %#ok<PFBNS>
+    if (not(any(strcmp(i_p.UsingDefaults,{'Acc_norm'})))) %#ok<PFBNS>
+        Acceptor_norm = normalize_image(Acceptor,'limits',i_p.Results.Acc_norm)
+    else
+        Acceptor_norm = normalize_image(Acceptor)
+    end
+    
+    imwrite(Acceptor_norm,fullfile(exp_folder,'Acceptor_norm',sprintf('%02d.png',i_num)));
+    
     Eff = imread(file_set.Eff{i_num});
     Eff = Eff * i_p.Results.Eff_correction
     
-    edge_mask = imread(file_set.edge_mask{i_num});
     edge_mask_label = imread(file_set.edge_mask_label{i_num});
-    
-    props = regionprops(edge_mask_label,Acceptor,'Area','MajorAxisLength',...
-        'MinorAxisLength','MeanIntensity');
     
     Eff_props = regionprops(edge_mask_label,Eff,'MeanIntensity');
     
@@ -63,9 +67,9 @@ end
 end
 
 function mean_image = make_mean_image(label,props,mean_prop_name)
-    this_mean_set = [props.(mean_prop_name)];
-    mean_image = zeros(size(label,1),size(label,2));
-    for i = 1:length(this_mean_set)
-        mean_image(label == i) = this_mean_set(i);
-    end
+this_mean_set = [props.(mean_prop_name)];
+mean_image = zeros(size(label,1),size(label,2));
+for i = 1:length(this_mean_set)
+    mean_image(label == i) = this_mean_set(i);
+end
 end

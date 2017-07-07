@@ -56,9 +56,6 @@ parfor i_num = 1:length(file_set.Acceptor)
     
     mask_highlight = create_highlighted_image(Acceptor_norm,edge_mask);
     mask_label_highlight = create_highlighted_image(Acceptor_norm,edge_mask_label);
-
-    mkdir_no_err(fullfile(exp_folder,'Acceptor_norm'));
-    imwrite(Acceptor_norm,fullfile(exp_folder,'Acceptor_norm',sprintf('%02d.png',i_num)));    
     
     mkdir_no_err(fullfile(exp_folder,'edge_mask'));
     imwrite(edge_mask,fullfile(exp_folder,'edge_mask',sprintf('%02d.png',i_num)));
