@@ -26,19 +26,31 @@ addpath(genpath('../shared'));
 
 file_set = get_filenames(exp_folder);
 
-c_map = [0,0,0;jet(255)];
+eff_c_map = [0,0,0;jet(255)];
 
 vis_folder = fullfile(exp_folder,'visualizations');
 
 mkdir_no_err(vis_folder);
 
-mkdir_no_err(fullfile(exp_folder,'Acceptor_norm'))
-
-imwrite(output_color_map(c_map,'labels',i_p.Results.Eff_limits),...
+imwrite(output_color_map(eff_c_map,'labels',i_p.Results.Eff_limits),...
     fullfile(vis_folder,'scale_bar_labels.png'));
 
-imwrite(output_color_map(c_map),...
+imwrite(output_color_map(eff_c_map),...
     fullfile(vis_folder,'scale_bar.png'));
+
+acc_c_map = gray(255);
+
+acc_folder = fullfile(exp_folder,'Acceptor_norm');
+
+mkdir_no_err(acc_folder)
+
+imwrite(output_color_map(acc_c_map),...
+    fullfile(acc_folder,'scale_bar.png'));
+
+if (not(any(strcmp(i_p.UsingDefaults,{'Acc_norm'}))))
+    imwrite(output_color_map(acc_c_map,'labels',i_p.Results.Acc_norm),...
+        fullfile(acc_folder,'scale_bar_labels.png'));
+end
 
 parfor i_num = 1:length(file_set.Acceptor)
     Acceptor = imread(file_set.Acceptor{i_num}); %#ok<PFBNS>
@@ -58,10 +70,16 @@ parfor i_num = 1:length(file_set.Acceptor)
     Eff_props = regionprops(edge_mask_label,Eff,'MeanIntensity');
     
     Eff_mean = make_mean_image(edge_mask_label,Eff_props,'MeanIntensity');
-    Eff_mean_color = colorize_image(Eff_mean,c_map,...
+    Eff_mean_color = colorize_image(Eff_mean,eff_c_map,...
         'normalization_limits',i_p.Results.Eff_limits);
     imwrite(Eff_mean_color,...
         fullfile(vis_folder,sprintf('Eff_mean_%02d.png',i_num)));
+    
+    Eff_masked = Eff .* double(edge_mask_label > 0);
+    Eff_color = colorize_image(Eff_masked,eff_c_map,...
+        'normalization_limits',i_p.Results.Eff_limits);
+    imwrite(Eff_color,...
+        fullfile(vis_folder,sprintf('Eff_%02d.png',i_num)));
 end
 
 end
