@@ -1,4 +1,4 @@
-function run_processing_on_all(folder)
+function run_processing_on_all(folder,varargin)
 % run_processing_on_folders - run processing steps on all subfolders in a
 % given folder
 %
@@ -26,9 +26,9 @@ for i = 1:length(sub_folders)
     if (sub_folders(i).isdir)
         fprintf('Working on %s (%d of %d).\n',sub_folders(i).name,i,length(sub_folders));
         try
-            segment_cell_edges(fullfile(folder,sub_folders(i).name));
-            process_cell_edges(fullfile(folder,sub_folders(i).name));
-            build_visualizations(fullfile(folder,sub_folders(i).name));
+            segment_cell_edges(fullfile(folder,sub_folders(i).name),varargin{:});
+            process_cell_edges(fullfile(folder,sub_folders(i).name),varargin{:});
+            build_visualizations(fullfile(folder,sub_folders(i).name),varargin{:});
         catch
             disp(['Error on: ', fullfile(folder,sub_folders(i).name)]);
         end

@@ -4,6 +4,7 @@ function build_visualizations(exp_folder,varargin)
 %%Setup variables and parse command line
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 i_p = inputParser;
+i_p.KeepUnmatched = 1;
 
 i_p.addRequired('exp_folder',@(x)exist(x,'dir') == 7);
 

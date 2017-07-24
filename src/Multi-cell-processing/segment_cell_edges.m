@@ -4,6 +4,7 @@ function segment_cell_edges(exp_folder,varargin)
 %%Setup variables and parse command line
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 i_p = inputParser;
+i_p.KeepUnmatched = 1;
 
 i_p.addRequired('exp_folder',@(x)exist(x,'dir') == 7);
 
@@ -46,16 +47,9 @@ parfor i_num = 1:length(file_set.Acceptor)
     
     edge_mask_label = uint16(watershed_min_size(Acceptor,edge_mask,10));
     
-    non_edge = Acceptor > std(Acceptor(:)) & imdilate(edge_mask,strel('disk',50)) & ~edge_mask;
-    wide_non_edge = Acceptor > std(Acceptor(:)) & ...
-        imdilate(edge_mask,strel('disk',50)) & ...
-        ~imdilate(edge_mask,strel('disk',10));
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Visualization
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
-    non_edge_hightlight = create_highlighted_image(Acceptor_norm,non_edge,'mix_percent',0.5);
-    
     mask_highlight = create_highlighted_image(Acceptor_norm,edge_mask);
     mask_label_highlight = create_highlighted_image(Acceptor_norm,edge_mask_label);
     
@@ -70,13 +64,4 @@ parfor i_num = 1:length(file_set.Acceptor)
     
     mkdir_no_err(fullfile(exp_folder,'edge_label_highlight'));
     imwrite(mask_label_highlight,fullfile(exp_folder,'edge_label_highlight',sprintf('%02d.png',i_num)));
-    
-    mkdir_no_err(fullfile(exp_folder,'non_edge_mask'));
-    imwrite(non_edge,fullfile(exp_folder,'non_edge_mask',sprintf('%02d.png',i_num)));
-
-    mkdir_no_err(fullfile(exp_folder,'wide_non_edge_mask'));
-    imwrite(wide_non_edge,fullfile(exp_folder,'wide_non_edge_mask',sprintf('%02d.png',i_num)));
-    
-    mkdir_no_err(fullfile(exp_folder,'non_edge_mask_highlight'));
-    imwrite(non_edge_hightlight,fullfile(exp_folder,'non_edge_mask_highlight',sprintf('%02d.png',i_num)));
 end
