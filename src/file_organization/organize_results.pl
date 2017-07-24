@@ -20,6 +20,7 @@ if (scalar(@ARGV) == 0) {
 
 while (@ARGV) {
 	my $results_dir = shift @ARGV;
+	next if ! -d $results_dir;
 	my @files = <"$results_dir/*">;
 
 	my $images_dir = "$results_dir/images";
