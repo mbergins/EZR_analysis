@@ -48,36 +48,44 @@ my @unrefed_files;
 
 for (@files) {
 	my $filename = basename($_);
-	if ($_ =~ /bsa_pre_(.*?)_w.*_s(\d+)_t\d+/) {
-		my $target_folder = "$results_dir/$2/Acceptor";
+	if ($_ =~ /bsa_pre_(.*?)_w.*_s(\d+)/) {
+		my $stage = sprintf('%02d',$2);
+		my $target_folder = "$results_dir/$stage/Acceptor";
 		make_path($target_folder);
 		system("ln -s \"../../images/$filename\" \"$target_folder/$filename\"\n");
-	} elsif ($_ =~ /cna_pre_(.*?)_w.*_s(\d+)_t\d+/) {
-		my $target_folder = "$results_dir/$2/FRET";
+	} elsif ($_ =~ /cna_pre_(.*?)_w.*_s(\d+)/) {
+		my $stage = sprintf('%02d',$2);
+		my $target_folder = "$results_dir/$stage/FRET";
 		make_path("$target_folder");
 		system("ln -s \"../../images/$filename\" \"$target_folder/$filename\"\n");
-	} elsif ($_ =~ /bsd_pre_(.*?)_w.*_s(\d+)_t\d+/) {
-		my $target_folder = "$results_dir/$2/Donor";
+	} elsif ($_ =~ /bsd_pre_(.*?)_w.*_s(\d+)/) {
+		my $stage = sprintf('%02d',$2);
+		my $target_folder = "$results_dir/$stage/Donor";
 		make_path("$target_folder");
 		system("ln -s \"../../images/$filename\" \"$target_folder/$filename\"\n");
-	} elsif ($_ =~ /pre_(.*?)_w.*FWTR_s(\d+)_t\d+/) {
-		my $target_folder = "$results_dir/$2/Cherry";
+	} elsif ($_ =~ /pre_(.*?)_w.*FWTR_s(\d+)/) {
+		my $stage = sprintf('%02d',$2);
+		my $target_folder = "$results_dir/$stage/Cherry";
 		make_path("$target_folder");
 		system("ln -s \"../../images/$filename\" \"$target_folder/$filename\"\n");
-	} elsif ($filename =~ /(.*?)_w.*DIC_s(\d+)_t\d+/) {
-		my $target_folder = "$results_dir/$2/DIC";
+	} elsif ($filename =~ /(.*?)_w.*DIC_s(\d+)/) {
+		my $stage = sprintf('%02d',$2);
+		my $target_folder = "$results_dir/$stage/DIC";
 		make_path("$target_folder");
 		system("ln -s \"../../images/$filename\" \"$target_folder/$filename\"\n");
-	} elsif ($filename =~ /(.*?)_w.*BF_s(\d+)_t\d+/) {
-		my $target_folder = "$results_dir/$2/BF";
+	} elsif ($filename =~ /(.*?)_w.*BF_s(\d+)/) {
+		my $stage = sprintf('%02d',$2);
+		my $target_folder = "$results_dir/$stage/BF";
 		make_path("$target_folder");
 		system("ln -s \"../../images/$filename\" \"$target_folder/$filename\"\n");
-	} elsif ($_ =~ /dpa_pre_(.*?)_w.*_s(\d+)_t\d+/) {
-		my $target_folder = "$results_dir/$2/DPA";
+	} elsif ($_ =~ /dpa_pre_(.*?)_w.*_s(\d+)/) {
+		my $stage = sprintf('%02d',$2);
+		my $target_folder = "$results_dir/$stage/DPA";
 		make_path("$target_folder");
 		system("ln -s \"../../images/$filename\" \"$target_folder/$filename\"\n");
-	} elsif ($_ =~ /eff_pre_(.*?)_w.*_s(\d+)_t\d+/) {
-		my $target_folder = "$results_dir/$2/Efficiency";
+	} elsif ($_ =~ /eff_pre_(.*?)_w.*_s(\d+)/) {
+		my $stage = sprintf('%02d',$2);
+		my $target_folder = "$results_dir/$stage/Efficiency";
 		make_path("$target_folder");
 		system("ln -s \"../../images/$filename\" \"$target_folder/$filename\"\n");
 	} elsif ($_ =~ /SaveParams/) {
