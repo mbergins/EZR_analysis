@@ -4,6 +4,7 @@ function process_cell_edges(exp_folder,varargin)
 %%Setup variables and parse command line
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 i_p = inputParser;
+i_p.KeepUnmatched = 1;
 
 i_p.addRequired('exp_folder',@(x)exist(x,'dir') == 7);
 
@@ -32,7 +33,7 @@ for i_num = 1:length(file_set.Acceptor)
     data_set_mat = [data_set_mat;set_temp]; %#ok<AGROW>
 end
 
-csvwrite_with_headers(fullfile(exp_folder,'EZR_objs_para.csv'),data_set_mat,...
+csvwrite_with_headers(fullfile(exp_folder,'EZR_objs.csv'),data_set_mat,...
     fieldnames(image_props_sets{1}));
 end
 
@@ -62,11 +63,8 @@ FRET = imread(file_set.FRET{i_num});
 DPA = imread(file_set.DPA{i_num});
 Eff = imread(file_set.Eff{i_num});
 
-non_edge_mask = imread(file_set.non_edge_mask{i_num});
-wide_non_edge_mask = imread(file_set.wide_non_edge_mask{i_num});
 edge_mask = imread(file_set.edge_mask{i_num});
 edge_mask_label = imread(file_set.edge_mask_label{i_num});
-cell_mask = edge_mask | non_edge_mask;
 
 props = regionprops(edge_mask_label,Acceptor,'Area','MajorAxisLength',...
     'MinorAxisLength','MeanIntensity','Solidity','Centroid');
