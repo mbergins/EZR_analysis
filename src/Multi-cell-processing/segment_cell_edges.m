@@ -7,6 +7,8 @@ i_p = inputParser;
 
 i_p.addRequired('exp_folder',@(x)exist(x,'dir') == 7);
 
+i_p.addParameter('std_thresh',2,@(x)isnumeric(x) & x > 0);
+
 i_p.addParameter('debug',0,@(x)x==1 || x==0);
 
 i_p.parse(exp_folder,varargin{:});
@@ -35,7 +37,7 @@ parfor i_num = 1:length(file_set.Acceptor)
     
     Acc_high = apply_high_pass_filter(Acceptor,15);
     
-    edge_mask = Acc_high > 2*std(Acc_high(cell_region));
+    edge_mask = Acc_high > i_p.Results.std_thresh*std(Acc_high(cell_region));
     
     edge_mask = bwpropopen(edge_mask,'Area',20,'connectivity',4);
     edge_mask = fill_small_holes(edge_mask,10);
