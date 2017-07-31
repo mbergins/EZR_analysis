@@ -36,13 +36,10 @@ mkdir_no_err(vis_folder);
 imwrite(output_color_map(eff_c_map,'labels',i_p.Results.Eff_limits),...
     fullfile(vis_folder,'scale_bar_labels.png'));
 
-imwrite(output_color_map(eff_c_map),...
-    fullfile(vis_folder,'scale_bar.png'));
+imwrite(output_color_map(eff_c_map),fullfile(vis_folder,'scale_bar.png'));
 
 acc_c_map = gray(255);
-
 acc_folder = fullfile(exp_folder,'Acceptor_norm');
-
 mkdir_no_err(acc_folder)
 
 imwrite(output_color_map(acc_c_map),...
@@ -56,15 +53,16 @@ end
 parfor i_num = 1:length(file_set.Acceptor)
     Acceptor = imread(file_set.Acceptor{i_num}); %#ok<PFBNS>
     if (not(any(strcmp(i_p.UsingDefaults,{'Acc_norm'})))) %#ok<PFBNS>
-        Acceptor_norm = normalize_image(Acceptor,'limits',i_p.Results.Acc_norm)
+        Acceptor_norm = normalize_image(Acceptor,...
+            'limits',i_p.Results.Acc_norm);
     else
-        Acceptor_norm = normalize_image(Acceptor)
+        Acceptor_norm = normalize_image(Acceptor);
     end
     
     imwrite(Acceptor_norm,fullfile(exp_folder,'Acceptor_norm',sprintf('%02d.png',i_num)));
     
     Eff = imread(file_set.Eff{i_num});
-    Eff = Eff * i_p.Results.Eff_correction
+    Eff = Eff * i_p.Results.Eff_correction;
     
     edge_mask_label = imread(file_set.edge_mask_label{i_num});
     
@@ -81,6 +79,11 @@ parfor i_num = 1:length(file_set.Acceptor)
         'normalization_limits',i_p.Results.Eff_limits);
     imwrite(Eff_color,...
         fullfile(vis_folder,sprintf('Eff_%02d.png',i_num)));
+    
+    acc_by_Eff = [cat(3,Acceptor_norm,Acceptor_norm,Acceptor_norm),Eff_mean_color,Eff_color];
+    imwrite(acc_by_Eff,...
+        fullfile(vis_folder,sprintf('acc_Eff_%02d.png',i_num)));
+
 end
 
 end
