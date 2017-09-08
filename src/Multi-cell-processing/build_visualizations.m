@@ -65,6 +65,8 @@ parfor i_num = 1:length(file_set.Acceptor)
     
     Eff = imread(file_set.Eff{i_num});
     Eff = Eff * i_p.Results.Eff_correction;
+    Eff_color = colorize_image(Eff,eff_c_map,...
+        'normalization_limits',i_p.Results.Eff_limits);
     
     edge_mask_label = imread(file_set.edge_mask_label{i_num});
     
@@ -77,12 +79,14 @@ parfor i_num = 1:length(file_set.Acceptor)
         fullfile(vis_folder,sprintf('Eff_mean_%02d.png',i_num)));
     
     Eff_masked = Eff .* double(edge_mask_label > 0);
-    Eff_color = colorize_image(Eff_masked,eff_c_map,...
+    Eff_masked_color = colorize_image(Eff_masked,eff_c_map,...
         'normalization_limits',i_p.Results.Eff_limits);
-    imwrite(Eff_color,...
-        fullfile(vis_folder,sprintf('Eff_%02d.png',i_num)));
-    
-    acc_by_Eff = [cat(3,Acceptor_norm,Acceptor_norm,Acceptor_norm),Eff_mean_color,Eff_color];
+    gray_gap_vert = 0.5*ones(size(Eff,1),1,3);
+    gray_gap_horiz = 0.5*ones(1,size(Eff,2)*2+1,3);
+    acc_by_Eff = [...
+        cat(3,Acceptor_norm,Acceptor_norm,Acceptor_norm),gray_gap_vert,Eff_mean_color;...
+        gray_gap_horiz;
+        Eff_masked_color,gray_gap_vert,Eff_color];
     imwrite(acc_by_Eff,...
         fullfile(vis_folder,sprintf('acc_Eff_%02d.png',i_num)));
 
