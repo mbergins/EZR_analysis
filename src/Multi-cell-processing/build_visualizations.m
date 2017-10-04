@@ -9,7 +9,7 @@ i_p.KeepUnmatched = 1;
 i_p.addRequired('exp_folder',@(x)exist(x,'dir') == 7);
 
 i_p.addParameter('debug',0,@(x)x==1 || x==0);
-i_p.addParameter('Eff_limits',[0.20,0.3],@(x)isnumeric(x) & ...
+i_p.addParameter('Eff_limits',[0.20,0.32],@(x)isnumeric(x) & ...
     length(x) == 2 & x(1) < x(2));
 i_p.addParameter('Eff_correction',1,@(x)isnumeric(x) & ...
     length(x) == 1);
@@ -27,29 +27,29 @@ addpath(genpath('../shared'));
 
 file_set = get_filenames(exp_folder);
 
-eff_c_map = [0,0,0;jet(255)];
+eff_c_map = jet(256);
 
 vis_folder = fullfile(exp_folder,'visualizations');
 
 mkdir_no_err(vis_folder);
 
 imwrite(output_color_map(eff_c_map,'labels',i_p.Results.Eff_limits),...
-    fullfile(vis_folder,'scale_bar_labels.png'));
+    fullfile(vis_folder,'scale_bar_labels_Eff.png'));
 
-imwrite(output_color_map(eff_c_map),fullfile(vis_folder,'scale_bar.png'));
+imwrite(output_color_map(eff_c_map),fullfile(vis_folder,'scale_bar_Eff.png'));
 
 acc_c_map = gray(255);
 acc_folder = fullfile(exp_folder,'Acceptor_norm');
 mkdir_no_err(acc_folder)
 
 imwrite(output_color_map(acc_c_map),...
-    fullfile(acc_folder,'scale_bar.png'));
+    fullfile(acc_folder,'scale_bar_Acc.png'));
 
 if (not(any(strcmp(i_p.UsingDefaults,{'Acc_norm'}))))
     labeled_c_map = output_color_map(acc_c_map,...
         'labels',i_p.Results.Acc_norm,...
         'label_colors',{'black','white'});
-    imwrite(labeled_c_map,fullfile(acc_folder,'scale_bar_labels.png'));
+    imwrite(labeled_c_map,fullfile(acc_folder,'scale_bar_labels_Acc.png'));
 end
 
 parfor i_num = 1:length(file_set.Acceptor)
@@ -65,21 +65,29 @@ parfor i_num = 1:length(file_set.Acceptor)
     
     Eff = imread(file_set.Eff{i_num});
     Eff = Eff * i_p.Results.Eff_correction;
-    Eff_color = colorize_image(Eff,eff_c_map,...
+    Eff_color = colorize_image(Eff,[0,0,0;eff_c_map],...
         'normalization_limits',i_p.Results.Eff_limits);
     
     edge_mask_label = imread(file_set.edge_mask_label{i_num});
+    edge_mask = edge_mask_label < 1;
+    edge_mask_3 = cat(3,edge_mask,edge_mask,edge_mask);
     
     Eff_props = regionprops(edge_mask_label,Eff,'MeanIntensity');
     
     Eff_mean = make_mean_image(edge_mask_label,Eff_props,'MeanIntensity');
     Eff_mean_color = colorize_image(Eff_mean,eff_c_map,...
         'normalization_limits',i_p.Results.Eff_limits);
+    Eff_mean_color(edge_mask_3) = 0;
     imwrite(Eff_mean_color,...
         fullfile(vis_folder,sprintf('Eff_mean_%02d.png',i_num)));
     
+    Eff_mean_color_wback = Eff_mean_color;
+    Eff_mean_color_wback(edge_mask_3) = 1;
+    imwrite(Eff_mean_color_wback,...
+        fullfile(vis_folder,sprintf('Eff_mean_white_%02d.png',i_num)));
+    
     Eff_masked = Eff .* double(edge_mask_label > 0);
-    Eff_masked_color = colorize_image(Eff_masked,eff_c_map,...
+    Eff_masked_color = colorize_image(Eff_masked,[0,0,0;eff_c_map],...
         'normalization_limits',i_p.Results.Eff_limits);
     gray_gap_vert = 0.5*ones(size(Eff,1),1,3);
     gray_gap_horiz = 0.5*ones(1,size(Eff,2)*2+1,3);
