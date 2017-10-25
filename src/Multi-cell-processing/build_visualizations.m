@@ -46,20 +46,24 @@ imwrite(output_color_map(acc_c_map),...
     fullfile(acc_folder,'scale_bar_Acc.png'));
 
 if (not(any(strcmp(i_p.UsingDefaults,{'Acc_norm'}))))
-    labeled_c_map = output_color_map(acc_c_map,...
-        'labels',i_p.Results.Acc_norm,...
-        'label_colors',{'black','white'});
-    imwrite(labeled_c_map,fullfile(acc_folder,'scale_bar_labels_Acc.png'));
+    Acc_limit = i_p.Results.Acc_norm;
+else
+    limit_set = [];
+    parfor i_num = 1:length(file_set.Acceptor)
+        Acceptor = imread(file_set.Acceptor{i_num}); %#ok<PFBNS>
+        [~,limits] = normalize_image(Acceptor);
+        limit_set = [limit_set;limits];
+    end
+    Acc_limit = mean(limit_set);
 end
+
+labeled_c_map = output_color_map(acc_c_map,'labels',Acc_limit,...
+    'label_colors',{'black','white'});
+imwrite(labeled_c_map,fullfile(acc_folder,'scale_bar_labels_Acc.png'));
 
 parfor i_num = 1:length(file_set.Acceptor)
     Acceptor = imread(file_set.Acceptor{i_num}); %#ok<PFBNS>
-    if (not(any(strcmp(i_p.UsingDefaults,{'Acc_norm'})))) %#ok<PFBNS>
-        Acceptor_norm = normalize_image(Acceptor,...
-            'limits',i_p.Results.Acc_norm);
-    else
-        Acceptor_norm = normalize_image(Acceptor);
-    end
+    Acceptor_norm = normalize_image(Acceptor,'limits',Acc_limit);
     
     imwrite(Acceptor_norm,fullfile(exp_folder,'Acceptor_norm',sprintf('%02d.png',i_num)));
     
@@ -67,6 +71,8 @@ parfor i_num = 1:length(file_set.Acceptor)
     Eff = Eff * i_p.Results.Eff_correction;
     Eff_color = colorize_image(Eff,[0,0,0;eff_c_map],...
         'normalization_limits',i_p.Results.Eff_limits);
+    imwrite(Eff_color,...
+        fullfile(vis_folder,sprintf('Eff_color_%02d.png',i_num)));
     
     edge_mask_label = imread(file_set.edge_mask_label{i_num});
     edge_mask = edge_mask_label < 1;
@@ -75,7 +81,7 @@ parfor i_num = 1:length(file_set.Acceptor)
     Eff_props = regionprops(edge_mask_label,Eff,'MeanIntensity');
     
     Eff_mean = make_mean_image(edge_mask_label,Eff_props,'MeanIntensity');
-    Eff_mean_color = colorize_image(Eff_mean,eff_c_map,...
+    Eff_mean_color = colorize_image(Eff_mean,[0,0,0;eff_c_map],...
         'normalization_limits',i_p.Results.Eff_limits);
     Eff_mean_color(edge_mask_3) = 0;
     imwrite(Eff_mean_color,...
