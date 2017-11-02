@@ -5,9 +5,10 @@
 ###############################################################################
 
 use strict;
-use File::Path qw(make_path);
+use File::Path qw(make_path rmtree);
 use File::Basename;
 use File::Copy;
+use File::Copy::Recursive qw(dirmove);
 use File::Spec::Functions;
 
 if (scalar(@ARGV) == 0) {
@@ -63,7 +64,12 @@ while (@ARGV) {
 			push @unrefed_files, $_;
 		}
 	}
+	
+	unlink(<"$results_dir/../*.TIF">, <"$results_dir/../*.nd">);
+	rmtree(<"$results_dir/../Preprocessed*">);
+	
+	system("mv \"$results_dir\"/* \"$results_dir/..\"");
+	rmtree(<"$results_dir/../FRET Correct*">);
 }
-
 
 # unlink @unrefed_files;
