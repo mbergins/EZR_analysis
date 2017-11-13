@@ -21,6 +21,7 @@ segment_cell_edges(folder);
 process_cell_edges(folder);
 build_visualizations(folder);
 
+fprintf('Done with %s.\n',folder);
 system('notify-send ''Done with Processing''')
 
 end
