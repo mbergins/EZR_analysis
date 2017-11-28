@@ -40,10 +40,10 @@ parfor i_num = 1:length(file_set.Acceptor)
     
     edge_mask = Acc_high > i_p.Results.std_thresh*std(Acc_high(cell_region));
     
-    edge_mask = bwpropopen(edge_mask,'Area',20,'connectivity',4);
     edge_mask = fill_small_holes(edge_mask,10);
     edge_mask = remove_edge_objects(edge_mask);
     edge_mask = edge_mask & cell_region;
+    edge_mask = bwpropopen(edge_mask,'Area',20,'connectivity',4);
     
     edge_mask_label = uint16(watershed_min_size(Acceptor,edge_mask,10));
     
