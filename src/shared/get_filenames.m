@@ -46,3 +46,6 @@ file_struct.non_edge_mask = file_search('.*',fullfile(i_p.Results.exp_folder,'no
 
 file_struct.wide_non_edge_mask = file_search('.*',fullfile(i_p.Results.exp_folder,'wide_non_edge_mask'),...
     'return_complete_files',1);
+
+file_struct.mask_ezr_eff = file_search('Eff_mean.*',fullfile(i_p.Results.exp_folder,'visualizations'),...
+    'return_complete_files',1);
